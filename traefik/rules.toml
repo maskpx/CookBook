@@ -1,0 +1,22 @@
+# Putting non-docker apps behind traefik proxy.  This example shows qnap.
+#Backends
+[backends]
+
+#pihole
+#  [backends.backend-pihole]
+#    [backends.backend-pihole.servers]
+#      [backends.backend-pihole.servers.server-pihole-ext]
+#        url = "http://192.168.200.50"
+#        weight = 0
+
+#pihole
+#  [frontends.frontend-pihole]
+#    backend = "backend-pihole"
+#    passHostHeader = true
+#    basicAuth = [
+#      HTTP Authentication
+#      "xxx:yyyyyyyyyyyy",
+#    ]
+#    [frontends.frontend-pihole.routes]
+#          [frontends.frontend-pihole.routes.route-pihole-ext]
+#        rule = "Host:pihole.example.com"

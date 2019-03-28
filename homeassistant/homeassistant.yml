@@ -1,0 +1,121 @@
+version: "3"
+
+services:
+  influxdb:
+    image: influxdb
+    networks:
+      - internal
+    volumes:
+      - /share/appdata/realtime/homeassistant/influxdb:/var/lib/influxdb
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8086:8086
+
+  influxdb-backup:
+    image: influxdb
+    volumes:
+      - /share/appdata/homeassistant/influxdb-backup:/dump
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 2m
+      while /bin/true; do
+        mkdir /dump/`date +%d-%m-%Y`/
+        influxd backup -database homeassistant /dump/`date +%d-%m-%Y`/
+        tar cvfp /dump/influxdb-`date +%d-%m-%Y`.tar.gz /dump/`date +%d-%m-%Y`/
+        rm -rf /dump/`date +%d-%m-%Y`/
+        (ls -t /dump/influxdb*.tar.gz|head -n $$BACKUP_NUM_KEEP;ls /dump/influxdb*.tar.gz)|sort|uniq -u|xargs rm -- {}
+        sleep $$BACKUP_FREQUENCY
+      done
+      EOF'
+    networks:
+      - internal
+
+  homeassistant:
+    image: homeassistant/home-assistant
+    volumes:
+      - /share/appdata/homeassistant/homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:homeassistant.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=8123
+    networks:
+      - traefik_public
+      - internal
+      - outside
+
+  homebridge:
+    image: jharmn/docker-homebridge-homeassistant
+    volumes:
+      - /share/appdata/homeassistant/homebridge:/root/.homebridge
+    ports:
+      - "5353:5353"
+      - "51826:51826"
+
+  homeassistant_proxy:
+    # Use this image becasuewe want websockets support
+    image: singingcode/docker_oauth2_proxy
+    env_file: /var/data/config/homeassistant/homeassistant.env
+    networks:
+      - internal
+      - traefik_public
+    #deploy:
+    #  labels:
+    #    - traefik.frontend.rule=Host:homeassistant.example.com
+    #    - traefik.docker.network=traefik_public
+    #    - traefik.port=4180
+    volumes:
+      - /var/data/config/homeassistant/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=false
+      -upstream=http://homeassistant:8123
+      -redirect-url=https://homeassistant.example.com
+      -http-address=http://0.0.0.0:4180
+      -email-domain=example.com
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+      -skip-auth-regex=/manifest.json
+      -skip-auth-regex=/api/notify.html5/callback
+
+  grafana-app:
+    image: grafana/grafana
+    env_file: /var/data/config/homeassistant/grafana.env
+    volumes:
+      - /var/data/homeassistant/grafana:/var/lib/grafana
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - internal
+
+  grafana-proxy:
+    image: example/oauth2_proxy
+    env_file: /var/data/config/homeassistant/grafana.env
+    dns_search: hq.example.com
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:grafana.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=4180
+    volumes:
+      - /var/data/config/homeassistant/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=false
+      -upstream=http://grafana-app:3000
+      -redirect-url=https://grafana.example.com
+      -http-address=http://0.0.0.0:4180
+      -email-domain=example.com
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+
+networks:
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.13.0/24

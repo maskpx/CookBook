@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  helloworld:
+    image: hello-world
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.39.0/24

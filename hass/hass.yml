@@ -1,0 +1,143 @@
+version: "3"
+
+services:
+  influxdb:
+    image: influxdb
+    networks:
+      - internal
+    volumes:
+      - /share/appdata/runtime/hass/influxdb:/var/lib/influxdb
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8086:8086
+  #    logging:
+  #      driver: gelf
+  #      options:
+  #         gelf-address: udp://192.168.1.100:12201
+  #         labels: database,influxdb,homeassisstant
+
+  influxdb-backup:
+    image: influxdb
+    volumes:
+      - /share/appdata/hass/influxdb-dump:/dump
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 2m
+      while /bin/true; do
+        mkdir /dump/`date +%d-%m-%Y`/
+        influxd backup -database homeassistant /dump/`date +%d-%m-%Y`/
+        tar cvfp /dump/influxdb-`date +%d-%m-%Y`.tar.gz /dump/`date +%d-%m-%Y`/
+        rm -rf /dump/`date +%d-%m-%Y`/
+        (ls -t /dump/influxdb*.tar.gz|head -n $$BACKUP_NUM_KEEP;ls /dump/influxdb*.tar.gz)|sort|uniq -u|xargs rm -- {}
+        sleep $$BACKUP_FREQUENCY
+      done
+      EOF'
+    networks:
+      - internal
+  #    logging:
+  #      driver: gelf
+  #      options:
+  #         gelf-address: udp://192.168.1.100:12201
+  #         labels: dbbackup,influxdb,homeassisstant
+
+  homeassistant:
+    image: homeassistant/home-assistant
+    ports:
+      - 8123:8123
+    volumes:
+      - /share/appdata/hass/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:hass.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=8123
+    networks:
+      - traefik_public
+      - internal
+  #    logging:
+  #      driver: gelf
+  #      options:
+  #         gelf-address: udp://192.168.1.100:12201
+  #         labels: app,homeassisstant
+
+  #homebridge:
+  #  image: jharmn/docker-homebridge-homeassistant
+  #  volumes:
+  #    - /share/appdata/hass/homebridge:/root/.homebridge
+  #  ports:
+  #    - "5353:5353"
+  #    - "51826:51826"
+  #  networks:
+  #    - internal
+
+  #    homeassistant_proxy:
+  #      # Use this image becasuewe want websockets support
+  #      image: singingcode/docker_oauth2_proxy
+  #      env_file: /share/appdata/config/homeassistant/homeassistant.env
+  #      dns_search: hq.funkypenguin.co.nz
+  #      networks:
+  #        - internal
+  #        - traefik_public
+  #      deploy:
+  #        labels:
+  #          - traefik.frontend.rule=Host:homeassistant.funkypenguin.co.nz
+  #          - traefik.docker.network=traefik_public
+  #          - traefik.port=4180
+  #      volumes:
+  #        - /var/data/config/homeassistant/authenticated-emails.txt:/authenticated-emails.txt
+  #      command: |
+  #        -cookie-secure=false
+  #        -upstream=http://homeassistant:8123
+  #        -redirect-url=https://homeassistant.funkypenguin.co.nz
+  #        -http-address=http://0.0.0.0:4180
+  #        -email-domain=funkypenguin.co.nz
+  #        -provider=github
+  #        -authenticated-emails-file=/authenticated-emails.txt
+  #        -skip-auth-regex=/manifest.json
+  #        -skip-auth-regex=/api/notify.html5/callback
+
+  grafana-app:
+    image: grafana/grafana
+    env_file: /share/appdata/config/hass/grafana.env
+    volumes:
+      - /share/appdata/hass/grafana:/var/lib/grafana
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - internal
+  #    logging:
+  #      driver: gelf
+  #      options:
+  #         gelf-address: udp://192.168.1.100:12201
+  #         labels: grafana,homeassisstant
+
+  grafana-proxy:
+    image: bitnami/oauth2-proxy
+    env_file: /share/appdata/config/hass/grafana.env
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:hassgr.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=4180
+    volumes:
+      - /share/appdata/config/hass/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=false
+      -upstream=http://grafana-app:3000
+      -redirect-url=https://hassgr.example.com
+      -http-address=http://0.0.0.0:4180
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+
+networks:
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.14.0/24

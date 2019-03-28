@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  app:
+    image: privatebin/nginx-fpm-alpine:latest
+    volumes:
+      - /share/appdata/privatebin:/srv/data
+    networks:
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:privatebin.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=80
+
+networks:
+  traefik_public:
+    external: true

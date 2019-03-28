@@ -1,0 +1,66 @@
+version: "3.2"
+services:
+  database:
+    # Don't upgrade PostgreSQL by simply changing the version number
+    # You need to migrate the Database to the new PostgreSQL version
+    image: postgres:11.2
+    env_file: /share/appdata/config/hackmd/hackmd.env
+    volumes:
+      - /share/appdata/runtime/hackmd/db:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  db-backup:
+    image: postgres:11.2
+    env_file: /share/appdata/config/hackmd/hackmd-backup.env
+    volumes:
+      - /share/appdata/hackmd/database-dump:/dump
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 2m
+      while /bin/true; do
+        pg_dump -Fc > /dump/dump_\`date +%d-%m-%Y"_"%H_%M_%S\`.psql
+        (ls -t /dump/dump*.psql|head -n $$BACKUP_NUM_KEEP;ls /dump/dump*.psql)|sort|uniq -u|xargs rm -- {}
+        sleep $$BACKUP_FREQUENCY
+      done
+      EOF'
+    networks:
+      - internal
+
+  app:
+    image: hackmdio/hackmd:latest
+    env_file: /share/appdata/config/hackmd/hackmd.env
+    networks:
+      - internal
+
+  proxy:
+    image: bitnami/oauth2-proxy:latest
+    env_file: /share/appdata/config/hackmd/hackmd.env
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:hackmd.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=4180
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /share/appdata/config/hackmd/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=true
+      -upstream=http://app:3000
+      -redirect-url=https://hackmd.example.com
+      -http-address=http://0.0.0.0:4180
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt   
+
+networks:
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.43.0/24

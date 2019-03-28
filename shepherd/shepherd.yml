@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  shepherd:
+    image: mazzolino/shepherd
+    env_file: /share/appdata/config/shepherd/shepherd.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - internal
+    labels:
+      - traefik.enable=false
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      mode: global
+#    logging:
+#      driver: gelf
+#      options:
+#         gelf-address: udp://192.168.1.100:12201
+#         labels: app,shepherd
+
+networks:
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.48.0/24

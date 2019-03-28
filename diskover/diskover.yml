@@ -1,0 +1,98 @@
+version: "3.2"
+
+services:
+  diskover:
+    image: linuxserver/diskover:latest
+    env_file: /share/appdata/config/diskover/diskover.env
+    volumes:
+      - /share/appdata/diskover/config:/config
+      - /share/Multimedia/Filme:/data/Filme
+      - /share/Multimedia/Serien:/data/Serien
+      - /share/appdata:/data/appdata
+    # Or, you can bind multiple host directories under the /data directory for scanning.
+    #- /share/Photos:/data/photos
+    #- /share/downloads:/data/downloads
+    #- /share/appdata:/data/appdata
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+
+  webproxy:
+    image: bitnami/oauth2-proxy:latest
+    env_file: /share/appdata/config/diskover/diskover.env
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:diskover.example.com
+        - traefik.port=4180
+        - traefik.docker.network=traefik_public
+    volumes:
+      - /share/appdata/config/diskover/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=false
+      -upstream=http://diskover:80
+      -redirect-url=https://diskover.example.com
+      -http-address=http://0.0.0.0:4180
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+      --ssl-insecure-skip-verify=true
+
+  dashproxy:
+    image: bitnami/oauth2-proxy:latest
+    env_file: /share/appdata/config/diskover/diskoverdash.env
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:diskoverdash.example.com
+        - traefik.port=4180
+        - traefik.docker.network=traefik_public
+    volumes:
+      - /share/appdata/config/diskover/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=false
+      -upstream=http://diskover:9181
+      -redirect-url=https://diskoverdash.example.com
+      -http-address=http://0.0.0.0:4180
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+      --ssl-insecure-skip-verify=true
+
+  elasticsearch:
+    image: elasticsearch:5.6-alpine
+    volumes:
+      - /share/appdata/runtime/diskover/elasticsearch:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 2048M
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - /share/appdata/runtime/diskover/redis:/data
+    networks:
+      - internal
+
+networks:
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.48.0/24

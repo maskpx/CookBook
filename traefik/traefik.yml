@@ -1,0 +1,47 @@
+version: "3"
+
+services:
+  app:
+    image: traefik:latest
+    env_file: /share/appdata/config/traefik/traefik.env
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /share/appdata/config/traefik:/etc/traefik
+    networks:
+      - traefik_public
+    command: --api --docker --docker.swarmmode --docker.watch --docker.domain=example.com
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+  #    logging:
+  #      driver: gelf
+  #      options:
+  #        gelf-address: udp://192.168.200.2:12201
+  #        labels: traefik
+  proxy:
+    image: bitnami/oauth2-proxy:latest
+    env_file: /share/appdata/config/traefik/traefik.env
+    networks:
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.frontend.rule=Host:traefik.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=4180
+    volumes:
+      - /share/appdata/config/traefik/authenticated-emails.txt:/authenticated-emails.txt
+    command: |
+      -cookie-secure=false
+      -upstream=http://app:8080
+      -redirect-url=https://traefik.example.com
+      -http-address=http://0.0.0.0:4180
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+
+networks:
+  traefik_public:
+    external: true

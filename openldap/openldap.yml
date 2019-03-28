@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  openldap:
+    image: osixia/openldap
+    env_file: /var/data/config/openldap/openldap.env
+    networks:
+      - traefik_proxy
+      - auth_internal
+    volumes:
+      - /share/appdata/runtime/openldap/:/var/lib/ldap
+      - /share/appdata/openldap/openldap/:/etc/ldap/slapd.d
+
+  lam:
+    image: jacksgt/ldap-account-manager
+    networks:
+      - auth_internal
+    volumes:
+      - /share/appdata/openldap/lam/config/config.cfg:/var/www/html/config/config.cfg
+      - /share/appdata/openldap/lam/config/example.conf:/var/www/html/config/example.conf
+
+  lam-proxy:
+    image: funkypenguin/oauth2_proxy
+    env_file: /share/appdata/config/openldap/openldap.env
+    networks:
+      - traefik_proxy
+      - auth_internal
+    volumes:
+      - /share/appdata/oauth_proxy/authenticated-emails.txt:/authenticated-emails.txt
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:lam.example.com
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=4180
+    command: |
+      -cookie-secure=false
+      -upstream=http://lam:80
+      -redirect-url=https://lam.example.com
+      -http-address=http://0.0.0.0:4180
+      -email-domain=gmail.com
+      -provider=github
+      -authenticated-emails-file=/authenticated-emails.txt
+
+networks:
+  # Used to expose lam-proxy to external access, and openldap to keycloak
+  traefik_proxy:
+    external: true
+
+  # Used to expose openldap to other apps which want to talk to LDAP, including LAM
+  auth_internal:
+    external: true
