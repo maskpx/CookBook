@@ -53,9 +53,9 @@ dsr(){
    - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird, wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
 
 ```
-  #  acmeLogging = true
-  #onDemand = true
-#  caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+#acmeLogging = true
+#onDemand = true
+#caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ```
 
 10. mit den anderen Apps fortfahren
