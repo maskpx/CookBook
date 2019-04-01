@@ -36,7 +36,6 @@ Um dieses Repo zu benutzen muss nicht viel gemacht werden
 5. via SSH verbinden und "docker swarm init" eingeben
    - sollte ein fehler kommen den flag "--advertise-addr 192.168.x.x" bei docker swarm init benutzen
 6. in /opt/etc/.profile folgendes hinzufügen
-
 ```
 dsd(){
  docker stack deploy "$1" -c /share/appdata/config/"$1"/"$1".yml
@@ -45,19 +44,16 @@ dsr(){
  docker stack rm "$1"
 }
 ```
-
 7. bei allen ordnern die permissions setzen
 8. acme.json muss leer sein und die permissions auf 600 gesetzt sein
 9. Auth0 einrichten danach kann man mit "dsd traefik" starten
    - bei DNS Challenge empfiehlt sich testläufe zu machen
    - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird, wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
-
 ```
 #acmeLogging = true
 #onDemand = true
 #caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ```
-
 10. mit den anderen Apps fortfahren
 
 ---
