@@ -30,15 +30,11 @@ Um dieses Repo zu benutzen muss nicht viel gemacht werden
 2. Im neuen Repo Entware-std suchen & installieren
 3. Container Station installieren
 4. zu präferenzen wechseln und folgendes ändern
-
-- Netzwerkeinstellungen (docker0) IP-Adresse auf 10.0.4.x/22 ändern
-- Primär DNS-Server entweder google oder cloudflare eintragen
-- das ganze übernehmen
-
+   - Netzwerkeinstellungen (docker0) IP-Adresse auf 10.0.4.x/22 ändern
+   - Primär DNS-Server entweder google oder cloudflare eintragen
+   - das ganze übernehmen
 5. via SSH verbinden und "docker swarm init" eingeben
-
-- sollte ein fehler kommen den flag "--advertise-addr 192.168.x.x" bei docker swarm init benutzen
-
+   - sollte ein fehler kommen den flag "--advertise-addr 192.168.x.x" bei docker swarm init benutzen
 6. in /opt/etc/.profile folgendes hinzufügen
 
 ```
@@ -53,16 +49,14 @@ dsr(){
 7. bei allen ordnern die permissions setzen
 8. acme.json muss leer sein und die permissions auf 600 gesetzt sein
 9. Auth0 einrichten danach kann man mit "dsd traefik" starten
-
-- bei DNS Challenge empfiehlt sich testläufe zu machen
+   - bei DNS Challenge empfiehlt sich testläufe zu machen
+   - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird, wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
 
 ```
   #  acmeLogging = true
   #onDemand = true
 #  caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
 ```
-
-- diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird, wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
 
 10. mit den anderen Apps fortfahren
 
