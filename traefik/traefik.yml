@@ -16,31 +16,60 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
+      labels:
+        - traefik.frontend.rule=Host:traefik.maskpx.com
+        - traefik.enable=true
+        - traefik.docker.network=traefik_public
+        - traefik.port=8080
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
+
   #    logging:
   #      driver: gelf
   #      options:
   #        gelf-address: udp://192.168.200.2:12201
   #        labels: traefik
-  proxy:
-    image: bitnami/oauth2-proxy:latest
-    env_file: /share/appdata/config/traefik/traefik.env
+
+  whoami:
+    image: containous/whoami
     networks:
       - traefik_public
     deploy:
       labels:
-        - traefik.enable=true
-        - traefik.frontend.rule=Host:traefik.example.com
+        - "traefik.frontend.rule=Host:whoami.example.com"
+        - "traefik.enable=true"
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
+        - "traefik.port=80"
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
+
+  auth:
+    image: dniel/forwardauth
+    networks:
+      - traefik_public
+    ports:
+      - 8080:8080
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:auth.example.com
+        - traefik.enable=true
+        - traefik.docker.network=traefik_public
+        - traefik.port=8080
     volumes:
-      - /share/appdata/config/traefik/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://app:8080
-      -redirect-url=https://traefik.example.com
-      -http-address=http://0.0.0.0:4180
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+      - /share/appdata/config/traefik/application.yaml:/config/application.yaml
+
+  www:
+    image: dniel/blogr-www
+    networks:
+      - traefik_public
+    deploy:
+      labels:
+        - "traefik.frontend.rule=Host:www.example.com"
+        - "traefik.enable=true"
+        - "traefik.port=80"
+        - traefik.docker.network=traefik_public
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
 networks:
   traefik_public:

@@ -106,32 +106,20 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       - internal
-  #    logging:
-  #      driver: gelf
-  #      options:
-  #         gelf-address: udp://192.168.1.100:12201
-  #         labels: grafana,homeassisstant
-
-  grafana-proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/hass/grafana.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:hassgr.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/hass/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://grafana-app:3000
-      -redirect-url=https://hassgr.example.com
-      -http-address=http://0.0.0.0:4180
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=3000
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
+
+  #    logging:
+  #      driver: gelf
+  #      options:
+  #         gelf-address: udp://192.168.1.100:12201
+  #         labels: grafana,homeassisstant
 
 networks:
   traefik_public:

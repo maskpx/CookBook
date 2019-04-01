@@ -2,21 +2,24 @@
 
 Um dieses Repo zu benutzen muss nicht viel gemacht werden
 
-1. Ordner Struktur anlegen
+1. Overlay Netzwerk erstellen erstellen
+   docker network create --driver=overlay --subnet=172.1.1.0/22 --attachable traefik_public
+
+2. Ordner Struktur anlegen
    - überordner
      - Config
      - Zusätzliche Ordner wie in den \*.yml ersichtlich
      - runtime
        - Unterordner
-2. \*.yml anpassen
+3. \*.yml anpassen
    - /share/appdata anpassen an die eigene Ordnerstruktur (Volumes)
    - example.com anpassen an die eigene Domain
    - nicht benötigte Teile auskommentieren/kommentieren rückgängig machen
    - Provider anpassen wenn anderer oAuth Server benutzt werden soll als Github
-3. \*.env anpassen
+4. \*.env anpassen
    - oAuth Daten anpassen
    - PUID/GUID an eigene bedürfnisse anpassen
-4. Traefik anpassen
+5. Traefik anpassen
    - in diesem Bsp wurde DNS via Cloudflare benutzt hier bitte die Dokumentation von Traefik beachten
 
 ---

@@ -9,29 +9,14 @@ services:
       - /share/appdata/autopirate/heimdall:/config
     networks:
       - internal
-
-  heimdall_proxy:
-    image: bitnami/oauth2-proxy:latest
-    env_file: /share/appdata/config/autopirate/heimdall.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:heimdall.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://heimdall:80
-      -redirect-url=https://heimdall.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=80
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   organizr:
     image: organizrtools/organizr-v2:latest
@@ -47,6 +32,8 @@ services:
         - traefik.frontend.rule=Host:organizr.example.com
         - traefik.docker.network=traefik_public
         - traefik.port=80
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   oscarr:
     image: morpheus65535/oscarr:latest
@@ -55,28 +42,14 @@ services:
       - /share/appdata/autopirate/oscarr:/oscarr/data
     networks:
       - internal
-
-  oscarr_proxy:
-    image: bitnami/oauth2-proxy:latest
-    env_file: /share/appdata/config/autopirate/oscarr.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:oscarr.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://oscarr:5656
-      -redirect-url=https://oscarr.example.com
-      -http-address=http://0.0.0.0:4180
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=5656
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   #  bazarr:
   #    image: linuxserver/bazarr:latest
@@ -87,28 +60,14 @@ services:
   #      - /share/Multimedia/Filme:/movies
   #    networks:
   #      - internal
-
-  #  bazarr_proxy:
-  #    image: bitnami/oauth2-proxy:latest
-  #    env_file: /share/appdata/config/autopirate/bazarr.env
-  #    networks:
-  #      - internal
   #      - traefik_public
   #    deploy:
   #      labels:
   #        - traefik.frontend.rule=Host:bazarr.example.com
   #        - traefik.docker.network=traefik_public
-  #        - traefik.port=4180
-  #    volumes:
-  #      - /etc/localtime:/etc/localtime:ro
-  #      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-  #    command: |
-  #      -cookie-secure=false
-  #      -upstream=http://bazarr:6767
-  #      -redirect-url=https://bazarr.example.com
-  #      -http-address=http://0.0.0.0:4180
-  #      -provider=github
-  #      -authenticated-emails-file=/authenticated-emails.txt
+  #        - traefik.port=6767
+  #      - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+  #      - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   #  sabnzbd:
   #    image: linuxserver/sabnzbd
@@ -117,29 +76,14 @@ services:
   #      - share/appdata/autopirate/sabnzbd:/config
   #    networks:
   #      - internal
-
-  #  sabnzbd_proxy:
-  #    image: bitnami/oauth2-proxy
-  #    env_file: /share/appdata/config/autopirate/sabnzbd.env
-  #    dns_search: myswarm.example.com
-  #    networks:
-  #      - internal
   #      - traefik_public
   #    deploy:
   #      labels:
-  #        - traefik.frontend.rule=Host:sabnzbd.example.com
-  #        - traefik.docker.network=traefik_public
-  #        - traefik.port=4180
-  #    volumes:
-  #      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-  #    command: |
-  #      -cookie-secure=false
-  #      -upstream=http://sabnzbd:8080
-  #      -redirect-url=https://sabnzbd.example.com
-  #      -http-address=http://0.0.0.0:4180
-  #      -email-domain=example.com
-  #      -provider=github
-  #      -authenticated-emails-file=/authenticated-emails.txt
+  #      - traefik.frontend.rule=Host:sabnzbd.example.com
+  #      - traefik.docker.network=traefik_public
+  #      - traefik.port=8080
+  #      - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+  #      - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   nzbget:
     image: linuxserver/nzbget:latest
@@ -149,30 +93,16 @@ services:
       - /share/Multimedia/:/media
     networks:
       - internal
+      - traefik_public
     ports:
       - 5075:5075
-
-  nzbget_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/nzbget.env
-    networks:
-      - internal
-      - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:nzbget.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://nzbget:6789
-      -redirect-url=https://nzbget.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=6789
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   #  rtorrent:
   #    image: linuxserver/rutorrent
@@ -185,29 +115,14 @@ services:
   #      - /share/appdata/autopirate/rtorrent:/config
   #    networks:
   #      - internal
-
-  #  rtorrent_proxy:
-  #    image: bitnami/oauth2-proxy
-  #    env_file: /share/appdata/config/autopirate/rtorrent.env
-  #    dns_search: myswarm.example.com
-  #    networks:
-  #      - internal
   #      - traefik_public
   #    deploy:
   #      labels:
-  #        - traefik.frontend.rule=Host:rtorrent.example.com
-  #        - traefik.docker.network=traefik_public
-  #        - traefik.port=4180
-  #    volumes:
-  #      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-  #    command: |
-  #      -cookie-secure=false
-  #      -upstream=http://rtorrent:80
-  #      -redirect-url=https://rtorrent.example.com
-  #      -http-address=http://0.0.0.0:4180
-  #      -email-domain=example.com
-  #      -provider=github
-  #      -authenticated-emails-file=/authenticated-emails.txt
+  #      - traefik.frontend.rule=Host:rtorrent.maskpx.com
+  #      - traefik.docker.network=traefik_public
+  #      - traefik.port=80
+  #      - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+  #      - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   lazylibrarian:
     image: linuxserver/lazylibrarian:latest
@@ -216,58 +131,30 @@ services:
       - /share/appdata/autopirate/lazylibrarian:/config
     networks:
       - internal
-
-  lazylibrarian_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/lazylibrarian.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:lazylibrarian.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://lazylibrarian:5299
-      -redirect-url=https://lazylibrarian.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=5299
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
-  mylar:
-    image: linuxserver/mylar:latest
-    volumes:
-      - /share/Multimedia/:/media
-      - /share/appdata/autopirate/mylar:/config
-    networks:
-      - internal
-
-  mylar_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/mylar.env
-    networks:
-      - internal
-      - traefik_public
-    deploy:
-      labels:
-        - traefik.frontend.rule=Host:mylar.example.com
-        - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://mylar:8090
-      -redirect-url=https://mylar.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+  #mylar:
+  #  image: linuxserver/mylar:latest
+  #  volumes:
+  #    - /share/Multimedia/:/media
+  #    - /share/appdata/autopirate/mylar:/config
+  #  networks:
+  #    - internal
+  #    - traefik_public
+  #  deploy:
+  #    labels:
+  #      - traefik.frontend.rule=Host:mylar.example.com
+  #      - traefik.docker.network=traefik_public
+  #      - traefik.port=8090
+  #      - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+  #      - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   ombi:
     image: linuxserver/ombi:latest
@@ -290,29 +177,14 @@ services:
   #    - /share/appdata/autopirate/headphones:/config
   #  networks:
   #    - internal
-
-  #headphones_proxy:
-  #  image: bitnami/oauth2-proxy
-  #  env_file: /share/appdata/config/autopirate/headphones.env
-  #  dns_search: myswarm.example.com
-  #  networks:
-  #    - internal
   #    - traefik_public
   #  deploy:
   #    labels:
-  #      - traefik.frontend.rule=Host:headphones.example.com
-  #      - traefik.docker.network=traefik_public
-  #      - traefik.port=4180
-  #  volumes:
-  #    - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-  #  command: |
-  #    -cookie-secure=false
-  #    -upstream=http://headphones:8181
-  #    -redirect-url=https://headphones.example.com
-  #    -http-address=http://0.0.0.0:4180
-  #    -email-domain=example.com
-  #    -provider=github
-  #    -authenticated-emails-file=/authenticated-emails.txt
+  #    - traefik.frontend.rule=Host:headphones.example.com
+  #    - traefik.docker.network=traefik_public
+  #    - traefik.port=8181
+  #    - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+  #    - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   radarr:
     image: linuxserver/radarr:latest
@@ -322,28 +194,12 @@ services:
       - /share/appdata/autopirate/radarr:/config
     networks:
       - internal
-
-  radarr_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/radarr.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:radarr.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://radarr:7878
-      -redirect-url=https://radarr.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=7878
 
   sonarr:
     image: linuxserver/sonarr:latest
@@ -353,28 +209,14 @@ services:
       - /share/appdata/autopirate/sonarr:/config
     networks:
       - internal
-
-  sonarr_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/sonarr.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:sonarr.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://sonarr:8989
-      -redirect-url=https://sonarr.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=8989
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   lidarr:
     image: linuxserver/lidarr:latest
@@ -385,28 +227,14 @@ services:
       - /share/appdata/autopirate/lidarr:/config
     networks:
       - internal
-
-  lidarr_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/lidarr.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:lidarr.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://lidarr:8686
-      -redirect-url=https://lidarr.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=8686
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   nzbhydra:
     image: linuxserver/hydra2:latest
@@ -415,28 +243,14 @@ services:
       - /share/appdata/autopirate/nzbhydra:/config
     networks:
       - internal
-
-  nzbhydra_proxy:
-    image: bitnami/oauth2-proxy
-    env_file: /share/appdata/config/autopirate/nzbhydra.env
-    networks:
-      - internal
       - traefik_public
     deploy:
       labels:
         - traefik.frontend.rule=Host:nzbhydra.example.com
         - traefik.docker.network=traefik_public
-        - traefik.port=4180
-    volumes:
-      - /share/appdata/config/autopirate/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://nzbhydra:5076
-      -redirect-url=https://nzbhydra.example.com
-      -http-address=http://0.0.0.0:4180
-      -email-domain=example.com
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
+        - traefik.port=5076
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
 networks:
   traefik_public:

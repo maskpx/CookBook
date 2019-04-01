@@ -17,6 +17,8 @@ services:
         - traefik.frontend.rule=Host:portainer.example.com
         - traefik.port=9000
         - traefik.docker.network=traefik_public
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
       placement:
         constraints: [node.role == manager]
     command: -H tcp://tasks.agent:9001 --tlsskipverify

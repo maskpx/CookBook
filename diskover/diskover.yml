@@ -20,50 +20,16 @@ services:
       resources:
         limits:
           memory: 4096M
-
-  webproxy:
-    image: bitnami/oauth2-proxy:latest
-    env_file: /share/appdata/config/diskover/diskover.env
-    networks:
-      - internal
-      - traefik_public
-    deploy:
       labels:
-        - traefik.frontend.rule=Host:diskover.example.com
-        - traefik.port=4180
+        - traefik.disk.frontend.rule=Host:diskover.example.com
+        - traefik.disk.port=80
         - traefik.docker.network=traefik_public
-    volumes:
-      - /share/appdata/config/diskover/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://diskover:80
-      -redirect-url=https://diskover.example.com
-      -http-address=http://0.0.0.0:4180
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
-      --ssl-insecure-skip-verify=true
-
-  dashproxy:
-    image: bitnami/oauth2-proxy:latest
-    env_file: /share/appdata/config/diskover/diskoverdash.env
-    networks:
-      - internal
-      - traefik_public
-    deploy:
-      labels:
-        - traefik.frontend.rule=Host:diskoverdash.example.com
-        - traefik.port=4180
-        - traefik.docker.network=traefik_public
-    volumes:
-      - /share/appdata/config/diskover/authenticated-emails.txt:/authenticated-emails.txt
-    command: |
-      -cookie-secure=false
-      -upstream=http://diskover:9181
-      -redirect-url=https://diskoverdash.example.com
-      -http-address=http://0.0.0.0:4180
-      -provider=github
-      -authenticated-emails-file=/authenticated-emails.txt
-      --ssl-insecure-skip-verify=true
+        - "traefik.disk.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.disk.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
+        - traefik.dash.frontend.rule=Host:diskoverdash.example.com
+        - traefik.dash.port=9181
+        - "traefik.dash.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.dash.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
 
   elasticsearch:
     image: elasticsearch:5.6-alpine
