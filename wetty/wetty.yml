@@ -1,0 +1,24 @@
+version: "3"
+services:
+  wetty:
+    image: krishnasrinivas/wetty
+    env_file: /share/appdata/config/wetty/wetty.env
+    networks:
+      - internal
+      - traefik_public
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:wetty.example.com
+        - traefik.docker.network=traefik_public
+        - traefik.port=3000
+        - "traefik.frontend.auth.forward.address=http://192.168.200.2:8080/authorize"
+        - "traefik.frontend.auth.forward.authResponseHeaders=X-FORWARDAUTH-NAME, X-FORWARDAUTH-SUB, X-FORWARDAUTH-EMAIL"
+
+networks:
+  traefik_public:
+    external: true
+  internal:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 172.16.45.0/24
