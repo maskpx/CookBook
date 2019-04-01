@@ -68,12 +68,12 @@ Um ForwardAuth zu benutzen muss man sich auf Auth0 anmelden.
 
 1. Anmeldung bei Auth0
 2. Eine neue Applikation erstellen
-   - Application Type: Regular Web Application
-   - Allowed Callback Urls: https://auth.example.com/signin
-   - Allowed Web Origins: https://auth.example.com
+    - Application Type: Regular Web Application
+    - Allowed Callback Urls: https://auth.example.com/signin
+    - Allowed Web Origins: https://auth.example.com
 3. Connections -> Social bis zu 2 "Loginhilfen" einrichten
-   - Es gibt bei jedem ensprechenden Eintrag eine Hilfe (How to Obtain a Client ID nicht vergessen e-mail anzuhacken wo es möglich ist wird später benötigt)
-   - Auf Try tippen bei den eingerichteten Accounts um später fehler auszuschliessen
+    - Es gibt bei jedem ensprechenden Eintrag eine Hilfe (How to Obtain a Client ID nicht vergessen e-mail anzuhacken wo es möglich ist wird später benötigt)
+    - Auf Try tippen bei den eingerichteten Accounts um später fehler auszuschliessen
 4. Bei Rules eine Whitelist erstellen. Man benötigt nur die mail adressen zu ändern.
 5. Auth0 Client ID und Client Secret in die application.yaml eintragen
 
