@@ -9,10 +9,26 @@
 #        url = "http://192.168.200.50"
 #        weight = 0
 
+[frontends]
 #pihole
 #  [frontends.frontend-pihole]
 #    backend = "backend-pihole"
 #    passHostHeader = true
+#    basicAuth = [
+#      HTTP Authentication
+#      "xxx:yyyyyyyyyyyy",
+#    ]
+#    [frontends.frontend-pihole.routes]
+#          [frontends.frontend-pihole.routes.route-pihole-ext]
+#        rule = "Host:pihole.example.com"
+#
+#pihole with forwardauth
+#  [frontends.frontend-pihole]
+#    backend = "backend-pihole"
+#    passHostHeader = true
+#     [frontends.frontend-qnap.auth.forward]
+#       address = "http://<ip-from-nas>:8080/authorize"
+#       authResponseHeaders = ["X-FORWARDAUTH-NAME","X-FORWARDAUTH-SUB","X-FORWARDAUTH-EMAIL"]
 #    basicAuth = [
 #      HTTP Authentication
 #      "xxx:yyyyyyyyyyyy",
