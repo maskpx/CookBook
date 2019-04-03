@@ -53,8 +53,9 @@ bounce(){
 7. bei allen ordnern die permissions setzen
 8. acme.json muss leer sein und die permissions auf 600 gesetzt sein
 9. Auth0 einrichten danach kann man mit "dsd traefik" starten
-   - bei DNS Challenge empfiehlt sich testläufe zu machen
-   - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird, wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
+   - bei DNS Challenge empfiehlt es sich testläufe zu machen
+   - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird(wenn das Dashboard geladen ist sollte nach ca. 5 min ein TestZertifikat angezeigt werden), wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
+   - Traefik.toml
 ```
 #acmeLogging = true
 #onDemand = true
