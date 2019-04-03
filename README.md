@@ -29,6 +29,7 @@ Um dieses Repo zu benutzen muss nicht viel gemacht werden
 1. Qnapclub als Repo im QNAPStore hinzufügen (https://www.qnapclub.eu/de/howto/1)
 2. Im neuen Repo Entware-std suchen & installieren
 3. Container Station installieren
+4. Die Ports 80/443/8080 freimachen (Web deaktivieren und Dashboard auf einen anderen Port legen)
 4. zu präferenzen wechseln und folgendes ändern
    - Netzwerkeinstellungen (docker0) IP-Adresse auf 10.0.4.x/22 ändern
    - Primär DNS-Server entweder google oder cloudflare eintragen
@@ -43,12 +44,18 @@ dsd(){
 dsr(){
  docker stack rm "$1"
 }
+bounce(){
+ docker stack rm "$1"
+ sleep 15
+ docker stack deploy "$1" -c /share/appdata/config/"$1"/"$1".yml
+}
 ```
 7. bei allen ordnern die permissions setzen
 8. acme.json muss leer sein und die permissions auf 600 gesetzt sein
 9. Auth0 einrichten danach kann man mit "dsd traefik" starten
-   - bei DNS Challenge empfiehlt sich testläufe zu machen
-   - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird, wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
+   - bei DNS Challenge empfiehlt es sich testläufe zu machen
+   - diese 3 reinkommentieren dsd traefik warten und überprüfen ob die acme.json befüllt wird(wenn das Dashboard geladen ist sollte nach ca. 5 min ein TestZertifikat angezeigt werden), wenn ja "dsr traefik" auskommentieren wieder und dsd traefik ausführen
+   - Traefik.toml
 ```
 #acmeLogging = true
 #onDemand = true
