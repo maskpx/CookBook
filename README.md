@@ -44,6 +44,11 @@ dsd(){
 dsr(){
  docker stack rm "$1"
 }
+bounce(){
+ docker stack rm "$1"
+ sleep 15
+ docker stack deploy "$1" -c /share/appdata/config/"$1"/"$1".yml
+}
 ```
 7. bei allen ordnern die permissions setzen
 8. acme.json muss leer sein und die permissions auf 600 gesetzt sein
