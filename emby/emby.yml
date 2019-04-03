@@ -18,6 +18,7 @@ services:
         - traefik.frontend.rule=Host:emby.example.com
         - traefik.docker.network=traefik_public
         - traefik.port=8096
+        - traefik.frontend.passHostHeader=true
 
 networks:
   traefik_public:
