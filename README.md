@@ -30,7 +30,7 @@ Um dieses Repo zu benutzen muss nicht viel gemacht werden
 2. Im neuen Repo Entware-std suchen & installieren
 3. Container Station installieren
 4. Die Ports 80/443/8080 freimachen (Web deaktivieren und Dashboard auf einen anderen Port legen)
-4. zu präferenzen wechseln und folgendes ändern
+4. Öffne die Container Station gehe zu den präferenzen wechseln den tab oben auf 
    - Netzwerkeinstellungen (docker0) IP-Adresse auf 10.0.4.x/22 ändern
    - Primär DNS-Server entweder google oder cloudflare eintragen
    - das ganze übernehmen
