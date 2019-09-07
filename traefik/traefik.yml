@@ -24,7 +24,7 @@ services:
       placement:
         constraints: [node.role == manager]
       labels:
-        - traefik.frontend.rule=Host:traefik.maskpx.com
+        - traefik.frontend.rule=Host:traefik.example.com
         - traefik.enable=true
         - traefik.docker.network=traefik_public
         - traefik.port=8080
