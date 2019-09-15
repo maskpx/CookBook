@@ -125,7 +125,9 @@ Remember these shortcut names:
 Please create these scripts and save them to `/share/appdata/scripts` if you want to use the cli shortcuts we created in earlier steps.  **NOTE:** `setup_stack.sh` requires you to add your NAS IP for it to work.
 All the stack scripts (`xxx_stack.sh`) require you to edit the stacks list to match your setup.  If you do not edit them they will fail to deploy the stacks you don't have .. nothing blows up, no bunnies die, just a big pile of nothingness in your swarm.
 ##### folder_setup.sh
-```#!/bin/bash
+
+```
+#!/bin/bash
 # Script to create gkoerk's famously awesome folder structure for stacks
 
 # Set folder paths here (you should not need to change these, but if you do, it will save a load of typing)
@@ -136,8 +138,8 @@ runtime=/share/runtime
 # Help message for script
 helpFunction() {
     echo ""
-    echo "Usage: $0 -f "
-    echo -f "-f name of folder(s) you wish to add. For more than one folder, use -f   ... . You can have 9 folder names in a single command"
+    echo "Usage: $0 -f <folder name>"
+    echo -f "-f name of folder(s) you wish to add. For more than one folder, use -f <folder name 1> <folder name 2> ... <folder name 9>. You can have 9 folder names in a single command"
     exit 1 # Exit script after printing help
 }
 
@@ -155,10 +157,13 @@ mkdir -p $runtime/{$1,$2,$3,$4,$5,$6,$7,$8,$9}
 
 echo "The following folders were setup:"
 echo " - $@"
+
 ```
 
 ##### restart_stack.sh 
-```#!/bin/bash
+
+```
+#!/bin/bash
 # define services - Add stacks to this list between the brackets
 # Leave Traefik out of the list as it will be started separately
 stacks=(portainer docker-cleanup
@@ -185,15 +190,18 @@ for stack in "${stacks[@]}"; do
     echo "**** Starting $stack ****"
     docker stack deploy $stack -c ${config_folder}/${stack}/${stack}.yml
     echo "***** Sleeping for a bit*****"
-    sleep 15
+    sleep 10
     echo "**** $stack has been started ****"
 done
 
 echo "**** All Stacks have been started ****"
+
 ```
 
 ##### remove_stack.sh
-```#!/bin/bash
+
+```
+#!/bin/bash
 # define services - Add stacks to this list between the brackets
 stacks=(portainer docker-cleanup
     shepherd wetty guacamole
@@ -210,7 +218,7 @@ for stack in "${stacks[@]}"; do
     echo "**** Removing $stack ****"
     docker stack rm $stack
     echo "***** Sleeping for a bit*****"
-    sleep 10
+    sleep 15
     echo "**** $stack has been removed ****"
 done
 echo "**** Removing Traefik ****"
@@ -218,22 +226,26 @@ echo "**** Removing Traefik ****"
 docker stack rm traefik
 echo "**** All Stacks have been removed ****"
 echo "***** Sleeping for a bit *****"
-sleep 10
+sleep 15
 echo "***** Pruning the stack *****"
 docker system prune -f
 echo "**** System pruned ****"
 docker swarm leave -f
 echo "***** Swarm Left *****"
+
 ```
+
 ##### setup_stack.sh
-```#!/bin/bash
+
+```
+#!/bin/bash
 # NOTE YOU NEED TO SET YOUR NAS IP BELOW FOR THE SWARM!!
 echo "***** Setting up Swarm *****"
 # setup Swarm
 docker swarm init --advertise-addr <ENTER YOUR NAS IP HERE>
 
 echo "***** Sleeping for a bit*****"
-sleep 10
+sleep 15
 
 echo "***** Setting up overlay network *****"
 # setup the overlay network
@@ -260,12 +272,14 @@ for stack in "${stacks[@]}"; do
     echo "**** Starting $stack ****"
     docker stack deploy $stack -c ${config_folder}/${stack}/${stack}.yml
     echo "***** Sleeping for a bit*****"
-    sleep 10
+    sleep 15
     echo "**** $stack has been started ****"
 done
 
 echo "**** All Stacks have been started ****"
+
 ```
+
 ---
 ### Deutsche Übersetzung
 ## SCHWARM-SETUP-ANLEITUNG
@@ -374,8 +388,11 @@ Merken Sie sich diese Verknüpfungsnamen:
 ### Scripts Setup
 Bitte erstellen Sie diese Skripte und speichern Sie sie unter `/share/appdata/scripts`, wenn Sie die Shortcuts verwenden möchten, die wir in früheren Schritten erstellt haben.  **HINWEIS:** `setup_stack.sh` erfordert, dass Sie Ihre NAS-IP hinzufügen, damit sie funktioniert.
 Alle Stack-Skripte (`xxx_stack.sh`) erfordern, dass Sie die Stackliste entsprechend Ihrem Setup bearbeiten.  Wenn du sie nicht bearbeitest, werden sie es nicht schaffen, die Stapel einzusetzen, die du nicht hast... nichts explodiert, keine Hasen sterben, nur ein großer Haufen Nichts in deinem Schwarm.
+
 ##### folder_setup.sh
-```#!/bin/bash
+
+```
+#!/bin/bash
 # Script to create gkoerk's famously awesome folder structure for stacks
 
 # Set folder paths here (you should not need to change these, but if you do, it will save a load of typing)
@@ -386,8 +403,8 @@ runtime=/share/runtime
 # Help message for script
 helpFunction() {
     echo ""
-    echo "Usage: $0 -f "
-    echo -f "-f name of folder(s) you wish to add. For more than one folder, use -f   ... . You can have 9 folder names in a single command"
+    echo "Usage: $0 -f <folder name>"
+    echo -f "-f name of folder(s) you wish to add. For more than one folder, use -f <folder name 1> <folder name 2> ... <folder name 9>. You can have 9 folder names in a single command"
     exit 1 # Exit script after printing help
 }
 
@@ -405,10 +422,13 @@ mkdir -p $runtime/{$1,$2,$3,$4,$5,$6,$7,$8,$9}
 
 echo "The following folders were setup:"
 echo " - $@"
+
 ```
 
 ##### restart_stack.sh 
-```#!/bin/bash
+
+```
+#!/bin/bash
 # define services - Add stacks to this list between the brackets
 # Leave Traefik out of the list as it will be started separately
 stacks=(portainer docker-cleanup
@@ -440,10 +460,13 @@ for stack in "${stacks[@]}"; do
 done
 
 echo "**** All Stacks have been started ****"
+
 ```
 
 ##### remove_stack.sh
-```#!/bin/bash
+
+```
+#!/bin/bash
 # define services - Add stacks to this list between the brackets
 stacks=(portainer docker-cleanup
     shepherd wetty guacamole
@@ -460,7 +483,7 @@ for stack in "${stacks[@]}"; do
     echo "**** Removing $stack ****"
     docker stack rm $stack
     echo "***** Sleeping for a bit*****"
-    sleep 10
+    sleep 15
     echo "**** $stack has been removed ****"
 done
 echo "**** Removing Traefik ****"
@@ -468,22 +491,26 @@ echo "**** Removing Traefik ****"
 docker stack rm traefik
 echo "**** All Stacks have been removed ****"
 echo "***** Sleeping for a bit *****"
-sleep 10
+sleep 15
 echo "***** Pruning the stack *****"
 docker system prune -f
 echo "**** System pruned ****"
 docker swarm leave -f
 echo "***** Swarm Left *****"
+
 ```
+
 ##### setup_stack.sh
-```#!/bin/bash
+
+```
+#!/bin/bash
 # NOTE YOU NEED TO SET YOUR NAS IP BELOW FOR THE SWARM!!
 echo "***** Setting up Swarm *****"
 # setup Swarm
 docker swarm init --advertise-addr <ENTER YOUR NAS IP HERE>
 
 echo "***** Sleeping for a bit*****"
-sleep 10
+sleep 15
 
 echo "***** Setting up overlay network *****"
 # setup the overlay network
@@ -510,12 +537,14 @@ for stack in "${stacks[@]}"; do
     echo "**** Starting $stack ****"
     docker stack deploy $stack -c ${config_folder}/${stack}/${stack}.yml
     echo "***** Sleeping for a bit*****"
-    sleep 10
+    sleep 15
     echo "**** $stack has been started ****"
 done
 
 echo "**** All Stacks have been started ****"
+
 ```
+
 ---
 
 
