@@ -230,7 +230,7 @@ echo "***** Swarm Left *****"
 # NOTE YOU NEED TO SET YOUR NAS IP BELOW FOR THE SWARM!!
 echo "***** Setting up Swarm *****"
 # setup Swarm
-docker swarm init --advertise-addr 192.168.200.20
+docker swarm init --advertise-addr <ENTER YOUR NAS IP HERE>
 
 echo "***** Sleeping for a bit*****"
 sleep 10
@@ -480,7 +480,7 @@ echo "***** Swarm Left *****"
 # NOTE YOU NEED TO SET YOUR NAS IP BELOW FOR THE SWARM!!
 echo "***** Setting up Swarm *****"
 # setup Swarm
-docker swarm init --advertise-addr 192.168.200.20
+docker swarm init --advertise-addr <ENTER YOUR NAS IP HERE>
 
 echo "***** Sleeping for a bit*****"
 sleep 10
